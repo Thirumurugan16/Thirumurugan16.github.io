@@ -16,7 +16,7 @@ const SK={
 "Lightning Web Components":[S('<rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><path d="M15.5 14.5l-2 2.5 2 2.5M19.5 14.5l2 2.5-2 2.5"/>'),"#0176D3","#A5A6F6"],
 "Tools & Additional Skills":[S('<circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="9" r="2"/><path d="M6 7v10M18 11c0 4-6 3-12 6"/>'),"#0176D3","#F59E0B"]};
 document.getElementById("skillGrid").innerHTML=["Salesforce Administration","Salesforce Automation","Apex Programming","Triggers & Asynchronous Apex","Lightning Web Components","Tools & Additional Skills"].map(o=>skills.find(x=>x[0]===o)).map(([n,i,c,k])=>`<article class="card skill ${k} rv"><h3><span class="sk-ic" style="background:linear-gradient(135deg,${SK[n][1]},${SK[n][2]})">${SK[n][0]}</span>${n}${k==="learn"?' <span class="badge">Currently Learning</span>':""}</h3><div class="chips">${c.map(chip).join("")}</div></article>`).join("");
-const stages=[["Enquiry","Web/Portal","📥"],["Lead Mgmt","Assignment Rule","👤"],["Site Visit","Schedule/Log","📅"],["Opportunity","Stage Tracking","💼"],["Unit Booking","Inventory Lock","🏢"],["Payment","Milestone","💳"],["Handover","Complete","🔑"]];
+const stages=[["Enquiry","Web/Portal","📥"],["Lead Management","Assignment Rule","👤"],["Site Visit","Schedule/Log","📅"],["Opportunity","Stage Tracking","💼"],["Unit Booking","Inventory Lock","🏢"],["Payment","Milestone","💳"],["Handover","Complete","🔑"]];
 const W=p=>`<svg viewBox="0 0 24 24" aria-hidden="true">${p}</svg>`;
 const wfs=[
 ["Customer Enquiry",'<path d="M4 5h16v11H9l-5 4z"/>',"Buyer enquiries are captured through the UrbanNest site enquiry form."],
@@ -33,7 +33,7 @@ function buildWF(){const el=document.getElementById("wf");
  const set=i=>{bs.forEach((b,k)=>{b.classList.toggle("act",k===i);b.classList.toggle("done",k<=i)});ds.innerHTML=`<b>${wfs[i][0]}</b><br>${wfs[i][2]}`;ss.forEach((x,k)=>x.classList.toggle("on",sup[k][1].includes(i)))};
  bs.forEach((b,i)=>{["mouseenter","focus","click"].forEach(ev=>b.addEventListener(ev,()=>set(i)))});set(1)}
 buildWF();
-document.getElementById("ufMods").innerHTML=["Lead Mgmt","Property Inventory","Site Visits","Opportunities","Unit Booking","Payment Tracking","Cancellations","Handover"].map(x=>`<span>${x}</span>`).join("");
+document.getElementById("ufMods").innerHTML=["Lead Management","Property Inventory","Site Visits","Opportunities","Unit Booking","Payment Tracking","Cancellations","Handover"].map(x=>`<span>${x}</span>`).join("");
 document.getElementById("ufChips").innerHTML=["Salesforce CRM","Custom Objects","Salesforce Flow","Apex-related Business Logic","Validation Rules","Role Hierarchy","Experience Cloud","Reports & Dashboards"].map(chip).join("");
 document.getElementById("mods").innerHTML=[["Lead Management","Captures property inquiries from web forms and maps assignment rules to regional sales executives."],["Property Inventory Management","Tracks available, reserved, and sold flat/villa units with automated status locking."],["Site Visit Management","Facilitates customer site inspection bookings, feedback logging, and automated reminders."],["Customer & Opportunity Management","Converts qualified leads into Opportunities with stages reflecting buyer intent."],["Unit Selection & Booking Management","Links chosen property unit to buyer record and generates preliminary booking agreements."],["Payment Management","Milestone-based installment tracking, down-payment verification, and payment schedule receipts."],["Cancellation & Refund Management","Handles cancellation requests, releases inventory locks, and computes deductions."],["Property Handover Management","Verifies complete payment clearances, snag checks, and final key handover confirmation."]].map((x,i)=>`<div><b>${i+1}. ${x[0]}:</b> ${x[1]}</div>`).join("");
 const chain=a=>a.map((x,i)=>`<span class="node${i==a.length-1?" hot":""}">${x}</span>`).join('<span aria-hidden="true">→</span>');
@@ -50,16 +50,21 @@ document.getElementById("tl").innerHTML=exp.map(([r,o,d,t])=>`<article class="ca
 const menu=document.getElementById("menu"),bg=document.getElementById("burger");
 bg.onclick=()=>{const o=menu.classList.toggle("open");bg.setAttribute("aria-expanded",o)};
 menu.querySelectorAll("a").forEach(a=>a.onclick=()=>{menu.classList.remove("open");bg.setAttribute("aria-expanded",false)});
-const links=[...menu.querySelectorAll("a")];
-const so=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)links.forEach(l=>l.classList.toggle("act",l.getAttribute("href")==="#"+e.target.id))}),{rootMargin:"-40% 0px -55% 0px"});
-document.querySelectorAll("section[id]").forEach(s=>so.observe(s));
+const links=[...menu.querySelectorAll('a[href^="#"]')],secs=links.map(a=>document.querySelector(a.getAttribute("href")));
+let lock=null;
+const setAct=id=>links.forEach(l=>{const on=l.getAttribute("href")==="#"+id;l.classList.toggle("act",on);on?l.setAttribute("aria-current","true"):l.removeAttribute("aria-current")});
+const track=()=>{if(lock||document.getElementById("modal").classList.contains("show")||document.getElementById("lb").classList.contains("show"))return;const y=window.scrollY+110;let id=secs[0].id;secs.forEach(s=>{if(s.offsetTop<=y)id=s.id});if(window.innerHeight+window.scrollY>=document.documentElement.scrollHeight-4)id=secs[secs.length-1].id;setAct(id)};
+links.forEach(l=>l.addEventListener("click",()=>{setAct(l.getAttribute("href").slice(1));clearTimeout(lock);lock=setTimeout(()=>{lock=null;track()},900)}));
+addEventListener("scroll",track,{passive:true});addEventListener("resize",track);addEventListener("load",track);
+addEventListener("hashchange",()=>{const id=location.hash.slice(1);if(secs.some(s=>s.id===id))setAct(id)});
+track();
 // reveal
 const ro=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");ro.unobserve(e.target)}}),{threshold:.1});
 document.querySelectorAll(".rv").forEach(e=>ro.observe(e));
 // modal
 const m=document.getElementById("modal");let last;
-const close=()=>{m.classList.remove("show");last&&last.focus()};
-document.querySelectorAll("[data-open]").forEach(b=>b.onclick=e=>{last=e.currentTarget;m.classList.add("show");m.querySelector(".mb").scrollTop=0;document.getElementById("closeM").focus()});
+const close=()=>{m.classList.remove("show");document.body.classList.remove("noscroll");last&&last.focus();track()};
+document.querySelectorAll("[data-open]").forEach(b=>b.onclick=e=>{last=e.currentTarget;m.classList.add("show");document.body.classList.add("noscroll");m.querySelector(".mb").scrollTop=0;document.getElementById("closeM").focus()});
 document.querySelectorAll("[data-close]").forEach(b=>b.onclick=close);
 m.onclick=e=>{if(e.target===m)close()};
 const ev=[["assets/evidence-1.webp","Home page of the UrbanNest Experience Cloud site (sandbox)"],["assets/evidence-2.webp","Featured developments with status and availability"],["assets/evidence-3.webp","Villa and commercial development listings"],["assets/evidence-4.webp","Property enquiry form"],["assets/evidence-5.webp","Properties navigation menu by category"]];
@@ -70,3 +75,9 @@ document.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{const x=ev[b.dat
 const closeLb=()=>{lb.classList.remove("show");lbLast&&lbLast.focus()};
 document.getElementById("lbX").onclick=closeLb;lb.onclick=e=>{if(e.target===lb)closeLb()};
 document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(lb.classList.contains("show"))closeLb();else if(m.classList.contains("show"))close()});
+
+/* Claude preview only: window.claude is absent on GitHub Pages, so the normal download link is used there */
+(()=>{const rb=document.querySelector(".resume-btn");if(!rb||!window.claude||!claude.use)return;
+rb.addEventListener("click",async e=>{e.preventDefault();try{const d=await claude.use("downloads");if(!d)return;const u=rb.getAttribute("href");let data;
+if(u.startsWith("data:")){const b=atob(u.split(",")[1]),a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);data=a}else data=await(await fetch(u)).blob();
+await d.save({filename:"D_Thirumurugan_Resume.pdf",data})}catch(err){}})})();
